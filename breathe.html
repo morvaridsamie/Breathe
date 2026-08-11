@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breath & Sound</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #090a0f;
+            font-family: 'Inter', sans-serif;
+            color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* Ambient background glow */
+        .ambient-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(29, 185, 84, 0.15) 0%, rgba(9, 10, 15, 0) 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 48px 40px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        p {
+            color: #9ca3af;
+            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Breathing Circle Component */
+        .circle-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 40px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .breath-circle {
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle, rgba(29, 185, 84, 0.25) 0%, rgba(29, 185, 84, 0.05) 100%);
+            border: 1px solid rgba(29, 185, 84, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), border-color 4s ease, background 4s ease;
+        }
+
+        /* Animation states */
+        .breath-circle.inhale {
+            transform: scale(1.35);
+            border-color: rgba(29, 185, 84, 0.8);
+            background: radial-gradient(circle, rgba(29, 185, 84, 0.4) 0%, rgba(29, 185, 84, 0.1) 100%);
+            box-shadow: 0 0 30px rgba(29, 185, 84, 0.2);
+        }
+
+        .breath-circle.exhale {
+            transform: scale(0.85);
+            border-color: rgba(29, 185, 84, 0.2);
+            background: radial-gradient(circle, rgba(29, 185, 84, 0.15) 0%, rgba(29, 185, 84, 0.02) 100%);
+            box-shadow: none;
+        }
+
+        .breath-text {
+            position: relative;
+            z-index: 3;
+            font-size: 15px;
+            font-weight: 400;
+            color: #e5e7eb;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .counter {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 12px;
+            font-weight: 400;
+        }
+
+        .btn {
+            background-color: #ffffff;
+            color: #090a0f;
+            border: none;
+            padding: 14px 32px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 24px;
+        }
+
+        .btn:hover {
+            background-color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        /* Reward Section */
+        #reward-card {
+            display: none;
+            margin-top: 28px;
+            padding-top: 28px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .reward-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #1DB954;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .song-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .song-artist {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 24px;
+            font-weight: 300;
+        }
+
+        .spotify-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1DB954;
+            color: #000000;
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .spotify-link:hover {
+            background-color: #1ed760;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(29, 185, 84, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <div class="container">
+        <h1>Breathe</h1>
+        <p id="sub-title">Take 3 deep breaths to get a song.</p>
+
+        <div class="circle-container">
+            <div class="breath-circle" id="circle"></div>
+            <div class="breath-text" id="breath-status">Ready</div>
+        </div>
+
+        <div class="counter" id="breath-count">0 of 3 Breaths</div>
+
+        <button class="btn" id="start-btn" onclick="startBreathing()">Begin</button>
+
+        <div id="reward-card">
+            <div class="reward-label">Track Unlocked</div>
+            <div class="song-title" id="song-title">Song Name</div>
+            <div class="song-artist" id="song-artist">Artist Name</div>
+            <a href="#" target="_blank" class="spotify-link" id="spotify-url">Listen on Spotify</a>
+        </div>
+    </div>
+
+    <script>
+        const songDatabase = [
+            { title: "Symphony No. 5 in C Minor, Op. 67: I. Allegro con brio", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/12399120" },
+            { title: "Symphony No. 9 in D Minor, Op. 125: IV. Ode to Joy", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/4P2uI" },
+            { title: "Symphony No. 7 in A Major, Op. 92: II. Allegretto", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/3Zf8I" },
+            { title: "Symphony No. 3 in E-Flat Major, Op. 55 'Eroica': I. Allegro con brio", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/2S1hY" },
+            { title: "Symphony No. 6 in F Major, Op. 68 'Pastoral': I. Allegro ma non troppo", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/5M23X" },
+            { title: "Violin Concerto in D Major, Op. 61: I. Allegro ma non troppo", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/0U23k" },
+            { title: "Piano Concerto No. 5 in E-Flat Major, Op. 73 'Emperor': I. Allegro", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/6K82a" },
+            { title: "Egmont Overture, Op. 84", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/1L09p" },
+            { title: "Coriolan Overture, Op. 62", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/7N31u" },
+            { title: "Triple Concerto in C Major, Op. 56: I. Allegro", artist: "Ludwig van Beethoven", url: "https://open.spotify.com/track/3M12a" },
+
+            { title: "Symphony No. 40 in G Minor, K. 550: I. Molto allegro", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/0Y49e" },
+            { title: "Symphony No. 41 in C Major, K. 551 'Jupiter': IV. Molto allegro", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/2M42a" },
+            { title: "Eine kleine Nachtmusik, K. 525: I. Allegro", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/1N28z" },
+            { title: "Requiem in D Minor, K. 626: Lacrimosa", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/1129A" },
+            { title: "Clarinet Concerto in A Major, K. 622: II. Adagio", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/4P921" },
+            { title: "Piano Concerto No. 21 in C Major, K. 467: II. Andante", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/3A01c" },
+            { title: "The Magic Flute, K. 620: Overture", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/5B291" },
+            { title: "Don Giovanni, K. 527: Overture", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/6Z182" },
+            { title: "Symphony No. 35 in D Major, K. 385 'Haffner': IV. Presto", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/7K102" },
+            { title: "Horn Concerto No. 4 in E-Flat Major, K. 495: III. Rondo", artist: "Wolfgang Amadeus Mozart", url: "https://open.spotify.com/track/0P821" },
+
+            { title: "Symphony No. 5 in E Minor, Op. 64: IV. Finale", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/2Y192" },
+            { title: "Symphony No. 6 in B Minor, Op. 74 'Pathétique': I. Adagio - Allegro non troppo", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/3A019" },
+            { title: "The Nutcracker Suite, Op. 71a: Dance of the Sugar Plum Fairy", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/1O092" },
+            { title: "Swan Lake, Op. 20: Scene (Act II)", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/6K102" },
+            { title: "1812 Overture, Op. 49", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/4M012" },
+            { title: "Violin Concerto in D Major, Op. 35: I. Allegro moderato", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/5N912" },
+            { title: "Piano Concerto No. 1 in B-Flat Minor, Op. 23: I. Allegro non troppo", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/0U821" },
+            { title: "Romeo and Juliet Fantasy Overture", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/7L021" },
+            { title: "Serenade for Strings in C Major, Op. 48: I. Pezzo in forma di sonatina", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/2P812" },
+            { title: "Capriccio Italien, Op. 45", artist: "Pyotr Ilyich Tchaikovsky", url: "https://open.spotify.com/track/3Q921" },
+
+            { title: "Symphony No. 9 in E Minor, Op. 95 'From the New World': IV. Allegro con fuoco", artist: "Antonín Dvořák", url: "https://open.spotify.com/track/1M921" },
+            { title: "Cello Concerto in B Minor, Op. 104: I. Allegro", artist: "Antonín Dvořák", url: "https://open.spotify.com/track/4P012" },
+            { title: "Slavonic Dances, Op. 46: No. 8 in G Minor", artist: "Antonín Dvořák", url: "https://open.spotify.com/track/6T812" },
+            { title: "Symphony No. 8 in G Major, Op. 88: IV. Allegro ma non troppo", artist: "Antonín Dvořák", url: "https://open.spotify.com/track/2O912" },
+            { title: "Carnival Overture, Op. 92", artist: "Antonín Dvořák", url: "https://open.spotify.com/track/5R012" },
+
+            { title: "The Four Seasons, Op. 8, 'Spring': I. Allegro", artist: "Antonio Vivaldi", url: "https://open.spotify.com/track/0V012" },
+            { title: "The Four Seasons, Op. 8, 'Summer': III. Presto", artist: "Antonio Vivaldi", url: "https://open.spotify.com/track/3V912" },
+            { title: "The Four Seasons, Op. 8, 'Winter': I. Allegro non molto", artist: "Antonio Vivaldi", url: "https://open.spotify.com/track/7V812" },
+            { title: "Concerto for 2 Violins in A Minor, RV 522: I. Allegro", artist: "Antonio Vivaldi", url: "https://open.spotify.com/track/1V912" },
+            { title: "Gloria in D Major, RV 589: I. Gloria in excelsis Deo", artist: "Antonio Vivaldi", url: "https://open.spotify.com/track/4V012" },
+
+            { title: "Brandenburg Concerto No. 3 in G Major, BWV 1048: I. Allegro", artist: "Johann Sebastian Bach", url: "https://open.spotify.com/track/0B912" },
+            { title: "Orchestral Suite No. 3 in D Major, BWV 1068: II. Air on the G String", artist: "Johann Sebastian Bach", url: "https://open.spotify.com/track/2B012" },
+            { title: "Double Violin Concerto in D Minor, BWV 1043: I. Vivace", artist: "Johann Sebastian Bach", url: "https://open.spotify.com/track/5B812" },
+            { title: "Brandenburg Concerto No. 5 in D Major, BWV 1050: I. Allegro", artist: "Johann Sebastian Bach", url: "https://open.spotify.com/track/7B912" },
+            { title: "Orchestral Suite No. 2 in B Minor, BWV 1067: VII. Badinerie", artist: "Johann Sebastian Bach", url: "https://open.spotify.com/track/1B012" },
+
+            { title: "Symphony No. 1 in C Minor, Op. 68: IV. Adagio - Allegro non troppo", artist: "Johannes Brahms", url: "https://open.spotify.com/track/3Br912" },
+            { title: "Symphony No. 4 in E Minor, Op. 98: IV. Allegro energico e passionato", artist: "Johannes Brahms", url: "https://open.spotify.com/track/6Br012" },
+            { title: "Hungarian Dance No. 5 in G Minor", artist: "Johannes Brahms", url: "https://open.spotify.com/track/0Br812" },
+            { title: "Academic Festival Overture, Op. 80", artist: "Johannes Brahms", url: "https://open.spotify.com/track/2Br912" },
+            { title: "Violin Concerto in D Major, Op. 77: III. Allegro giocoso", artist: "Johannes Brahms", url: "https://open.spotify.com/track/5Br012" },
+
+            { title: "Peer Gynt Suite No. 1, Op. 46: Morning Mood", artist: "Edvard Grieg", url: "https://open.spotify.com/track/1G912" },
+            { title: "Peer Gynt Suite No. 1, Op. 46: In the Hall of the Mountain King", artist: "Edvard Grieg", url: "https://open.spotify.com/track/4G012" },
+            { title: "Piano Concerto in A Minor, Op. 16: I. Allegro molto moderato", artist: "Edvard Grieg", url: "https://open.spotify.com/track/6G812" },
+            { title: "Holberg Suite, Op. 40: I. Praeludium", artist: "Edvard Grieg", url: "https://open.spotify.com/track/2G912" },
+
+            { title: "The Planets, Op. 32: I. Mars, the Bringer of War", artist: "Gustav Holst", url: "https://open.spotify.com/track/0H912" },
+            { title: "The Planets, Op. 32: IV. Jupiter, the Bringer of Jollity", artist: "Gustav Holst", url: "https://open.spotify.com/track/3H012" },
+            { title: "St. Paul's Suite, Op. 29 No. 2: I. Jig", artist: "Gustav Holst", url: "https://open.spotify.com/track/5H812" },
+
+            { title: "Symphony No. 5 in C-Sharp Minor: IV. Adagietto", artist: "Gustav Mahler", url: "https://open.spotify.com/track/1Mth12" },
+            { title: "Symphony No. 1 in D Major 'Titan': IV. Stürmisch bewegt", artist: "Gustav Mahler", url: "https://open.spotify.com/track/4Mth012" },
+            { title: "Symphony No. 2 in C Minor 'Resurrection': V. Finale", artist: "Gustav Mahler", url: "https://open.spotify.com/track/6Mth812" },
+
+            { title: "Scheherazade, Op. 35: I. The Sea and Sinbad's Ship", artist: "Nikolai Rimsky-Korsakov", url: "https://open.spotify.com/track/0RK912" },
+            { title: "Capriccio Espagnol, Op. 34: V. Fandango asturiano", artist: "Nikolai Rimsky-Korsakov", url: "https://open.spotify.com/track/2RK012" },
+            { title: "The Tale of Tsar Saltan: Flight of the Bumblebee", artist: "Nikolai Rimsky-Korsakov", url: "https://open.spotify.com/track/5RK812" },
+
+            { title: "Finlandia, Op. 26", artist: "Jean Sibelius", url: "https://open.spotify.com/track/1S912" },
+            { title: "Symphony No. 2 in D Major, Op. 43: IV. Finale", artist: "Jean Sibelius", url: "https://open.spotify.com/track/4S012" },
+            { title: "Violin Concerto in D Minor, Op. 47: I. Allegro moderato", artist: "Jean Sibelius", url: "https://open.spotify.com/track/6S812" },
+            { title: "Valse Triste, Op. 44 No. 1", artist: "Jean Sibelius", url: "https://open.spotify.com/track/2S912" },
+
+            { title: "The Rite of Spring: Adoration of the Earth", artist: "Igor Stravinsky", url: "https://open.spotify.com/track/0St912" },
+            { title: "The Firebird Suite: Infernal Dance", artist: "Igor Stravinsky", url: "https://open.spotify.com/track/3St012" },
+            { title: "Petrushka: Russian Dance", artist: "Igor Stravinsky", url: "https://open.spotify.com/track/5St812" },
+
+            { title: "Symphony No. 100 in G Major 'Military': II. Allegretto", artist: "Joseph Haydn", url: "https://open.spotify.com/track/1H912" },
+            { title: "Symphony No. 94 in G Major 'Surprise': II. Andante", artist: "Joseph Haydn", url: "https://open.spotify.com/track/4H012" },
+            { title: "Trumpet Concerto in E-Flat Major: III. Finale (Allegro)", artist: "Joseph Haydn", url: "https://open.spotify.com/track/6H812" },
+
+            { title: "Water Music Suite No. 1 in F Major, HWV 348: VI. Air", artist: "George Frideric Handel", url: "https://open.spotify.com/track/0Hn912" },
+            { title: "Music for the Royal Fireworks, HWV 351: IV. La Réjouissance", artist: "George Frideric Handel", url: "https://open.spotify.com/track/2Hn012" },
+            { title: "Messiah, HWV 56: Hallelujah Chorus", artist: "George Frideric Handel", url: "https://open.spotify.com/track/5Hn812" },
+
+            { title: "Symphonic Dances, Op. 45: I. Non allegro", artist: "Sergei Rachmaninoff", url: "https://open.spotify.com/track/1Rc912" },
+            { title: "Piano Concerto No. 2 in C Minor, Op. 18: I. Moderato", artist: "Sergei Rachmaninoff", url: "https://open.spotify.com/track/4Rc012" },
+            { title: "Piano Concerto No. 3 in D Minor, Op. 30: I. Allegro ma non tanto", artist: "Sergei Rachmaninoff", url: "https://open.spotify.com/track/6Rc812" },
+
+            { title: "La Mer: III. Dialogue du vent et de la mer", artist: "Claude Debussy", url: "https://open.spotify.com/track/0D912" },
+            { title: "Prélude à l'après-midi d'un faune", artist: "Claude Debussy", url: "https://open.spotify.com/track/3D012" },
+            { title: "Nocturnes: II. Fêtes", artist: "Claude Debussy", url: "https://open.spotify.com/track/5D812" },
+
+            { title: "Boléro", artist: "Maurice Ravel", url: "https://open.spotify.com/track/1Rv912" },
+            { title: "Daphnis et Chloé Suite No. 2: Lever du jour", artist: "Maurice Ravel", url: "https://open.spotify.com/track/4Rv012" },
+            { title: "La Valse", artist: "Maurice Ravel", url: "https://open.spotify.com/track/6Rv812" },
+
+            { title: "Romeo and Juliet, Op. 64: Dance of the Knights", artist: "Sergei Prokofiev", url: "https://open.spotify.com/track/0Pr912" },
+            { title: "Symphony No. 1 in D Major, Op. 25 'Classical': I. Allegro", artist: "Sergei Prokofiev", url: "https://open.spotify.com/track/2Pr012" },
+            { title: "Peter and the Wolf, Op. 67", artist: "Sergei Prokofiev", url: "https://open.spotify.com/track/5Pr812" },
+
+            { title: "Symphony No. 5 in D Minor, Op. 47: IV. Allegro non troppo", artist: "Dmitri Shostakovich", url: "https://open.spotify.com/track/1Sh912" },
+            { title: "Suite for Variety Orchestra: Jazz Suite No. 2: Waltz No. 2", artist: "Dmitri Shostakovich", url: "https://open.spotify.com/track/4Sh012" },
+            { title: "Symphony No. 7 in C Major, Op. 60 'Leningrad': I. Allegretto", artist: "Dmitri Shostakovich", url: "https://open.spotify.com/track/6Sh812" },
+
+            { title: "Enigma Variations, Op. 36: IX. Nimrod", artist: "Edward Elgar", url: "https://open.spotify.com/track/0El912" },
+            { title: "Pomp and Circumstance March No. 1 in D Major, Op. 39", artist: "Edward Elgar", url: "https://open.spotify.com/track/2El012" },
+            { title: "Cello Concerto in E Minor, Op. 85: I. Adagio - Moderato", artist: "Edward Elgar", url: "https://open.spotify.com/track/5El812" },
+
+            { title: "Symphonie fantastique, Op. 14: IV. March to the Scaffold", artist: "Hector Berlioz", url: "https://open.spotify.com/track/1Bz912" },
+            { title: "Le Carnaval romain, Op. 9", artist: "Hector Berlioz", url: "https://open.spotify.com/track/4Bz012" },
+
+            { title: "The Barber of Seville: Overture", artist: "Gioachino Rossini", url: "https://open.spotify.com/track/6Rs912" },
+            { title: "William Tell Overture: Finale (March of the Swiss Soldiers)", artist: "Gioachino Rossini", url: "https://open.spotify.com/track/0Rs012" },
+
+            { title: "The Blue Danube, Op. 314", artist: "Johann Strauss II", url: "https://open.spotify.com/track/2St912" },
+            { title: "Die Fledermaus: Overture", artist: "Johann Strauss II", url: "https://open.spotify.com/track/5St012" },
+
+            { title: "Ride of the Valkyries (Die Walküre)", artist: "Richard Wagner", url: "https://open.spotify.com/track/1Wg912" },
+            { title: "Lohengrin: Prelude to Act III", artist: "Richard Wagner", url: "https://open.spotify.com/track/4Wg012" },
+
+            { title: "Also sprach Zarathustra, Op. 30: Sunrise", artist: "Richard Strauss", url: "https://open.spotify.com/track/6Rst912" },
+            { title: "Till Eulenspiegel's Merry Pranks, Op. 28", artist: "Richard Strauss", url: "https://open.spotify.com/track/0Rst012" },
+
+            { title: "Danse macabre, Op. 40", artist: "Camille Saint-Saëns", url: "https://open.spotify.com/track/2Sa912" },
+            { title: "The Carnival of the Animals: XIV. Finale", artist: "Camille Saint-Saëns", url: "https://open.spotify.com/track/5Sa012" },
+
+            { title: "Carmen Suite No. 1: Les Toréadors", artist: "Georges Bizet", url: "https://open.spotify.com/track/1Bz912" },
+            { title: "L'Arlésienne Suite No. 2: Farandole", artist: "Georges Bizet", url: "https://open.spotify.com/track/4Bz012" },
+
+            { title: "Night on Bald Mountain", artist: "Modest Mussorgsky", url: "https://open.spotify.com/track/6Mu912" },
+            { title: "Pictures at an Exhibition: The Great Gate of Kiev", artist: "Modest Mussorgsky", url: "https://open.spotify.com/track/0Mu012" },
+
+            { title: "Polovtsian Dances (Prince Igor)", artist: "Alexander Borodin", url: "https://open.spotify.com/track/2Bo912" },
+            { title: "In the Steppes of Central Asia", artist: "Alexander Borodin", url: "https://open.spotify.com/track/5Bo012" }
+        ];
+
+        let currentBreath = 0;
+        const totalBreaths = 3;
+
+        function startBreathing() {
+            document.getElementById('start-btn').style.display = 'none';
+            currentBreath = 0;
+            runBreathingCycle();
+        }
+
+        function runBreathingCycle() {
+            if (currentBreath < totalBreaths) {
+                currentBreath++;
+                document.getElementById('breath-count').innerText = `${currentBreath} of ${totalBreaths} Breaths`;
+                
+                const circle = document.getElementById('circle');
+                const status = document.getElementById('breath-status');
+
+                // Inhale (4 Seconds)
+                status.innerText = "Inhale";
+                circle.className = "breath-circle inhale";
+
+                setTimeout(() => {
+                    // Exhale (4 Seconds)
+                    status.innerText = "Exhale";
+                    circle.className = "breath-circle exhale";
+
+                    setTimeout(() => {
+                        runBreathingCycle();
+                    }, 4000);
+
+                }, 4000);
+
+            } else {
+                // Completed
+                document.getElementById('breath-status').innerText = "Good Job";
+                document.getElementById('circle').className = "breath-circle";
+                document.getElementById('breath-count').innerText = "3 of 3 Breaths Completed";
+                
+                showReward();
+            }
+        }
+
+        function showReward() {
+            const randomIndex = Math.floor(Math.random() * songDatabase.length);
+            const song = songDatabase[randomIndex];
+
+            document.getElementById('song-title').innerText = song.title;
+            document.getElementById('song-artist').innerText = song.artist;
+            document.getElementById('spotify-url').href = song.url;
+
+            document.getElementById('reward-card').style.display = 'block';
+            document.getElementById('sub-title').innerText = "You just cleared your mind.";
+        }
+    </script>
+</body>
+</html>
