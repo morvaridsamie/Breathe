@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Breathe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +14,10 @@
             padding: 0;
         }
 
+        html, body {
+            height: 100%;
+        }
+
         body {
             background-color: #090a0f;
             font-family: 'Inter', sans-serif;
@@ -21,16 +25,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            /* dvh accounts for mobile browser chrome; vh is the fallback */
             min-height: 100vh;
-            overflow: hidden;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
             letter-spacing: -0.01em;
+            padding: 16px;
+            /* respect notches / safe areas */
+            padding-top: max(16px, env(safe-area-inset-top));
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
         }
 
         /* Ambient background glow */
         .ambient-glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
+            position: fixed;
+            width: min(300px, 60vw);
+            height: min(300px, 60vw);
             background: radial-gradient(circle, rgba(29, 185, 84, 0.15) 0%, rgba(9, 10, 15, 0) 70%);
             top: 50%;
             left: 50%;
@@ -48,15 +61,16 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
-            padding: 48px 40px;
+            padding: clamp(24px, 6vw, 48px) clamp(20px, 5vw, 40px);
             text-align: center;
             max-width: 420px;
-            width: 90%;
+            width: 100%;
+            margin: auto;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
         }
 
         h1 {
-            font-size: 22px;
+            font-size: clamp(18px, 4vw, 22px);
             font-weight: 500;
             margin-bottom: 8px;
             color: #ffffff;
@@ -72,17 +86,17 @@
         /* Breathing Circle Component */
         .circle-container {
             position: relative;
-            width: 180px;
-            height: 180px;
-            margin: 40px auto;
+            width: clamp(120px, 40vw, 180px);
+            height: clamp(120px, 40vw, 180px);
+            margin: clamp(20px, 6vw, 40px) auto;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         .breath-circle {
-            width: 130px;
-            height: 130px;
+            width: 72%;
+            height: 72%;
             background: radial-gradient(circle, rgba(29, 185, 84, 0.25) 0%, rgba(29, 185, 84, 0.05) 100%);
             border: 1px solid rgba(29, 185, 84, 0.4);
             border-radius: 50%;
@@ -108,7 +122,7 @@
         .breath-text {
             position: relative;
             z-index: 3;
-            font-size: 15px;
+            font-size: clamp(13px, 3vw, 15px);
             font-weight: 400;
             color: #e5e7eb;
             letter-spacing: 0.05em;
@@ -200,6 +214,67 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        /* Short viewports (phones in landscape) - shrink vertical spacing */
+        @media (max-height: 480px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 16px 20px;
+            }
+
+            h1 {
+                font-size: 16px;
+                margin-bottom: 4px;
+            }
+
+            p {
+                font-size: 12px;
+            }
+
+            .circle-container {
+                width: clamp(80px, 20vh, 110px);
+                height: clamp(80px, 20vh, 110px);
+                margin: 12px auto;
+            }
+
+            .breath-text {
+                font-size: 11px;
+            }
+
+            .counter {
+                margin-top: 6px;
+                font-size: 11px;
+            }
+
+            .btn {
+                padding: 10px 24px;
+                margin-top: 14px;
+            }
+
+            #reward-card {
+                margin-top: 14px;
+                padding-top: 14px;
+            }
+
+            .song-title {
+                font-size: 15px;
+            }
+
+            .song-artist {
+                margin-bottom: 12px;
+            }
+        }
+
+        /* Very small phones */
+        @media (max-width: 340px) {
+            .container {
+                padding: 20px 16px;
             }
         }
     </style>
